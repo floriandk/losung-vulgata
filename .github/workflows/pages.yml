@@ -1,0 +1,25 @@
+name: Losung des Tages
+on:
+  schedule: [{cron: "0 3 * * *"}]   # täglich ca. 04:00/05:00 Uhr deutscher Zeit
+  workflow_dispatch:
+  push: {branches: [main]}
+permissions: {contents: read, pages: write, id-token: write}
+concurrency: {group: pages, cancel-in-progress: true}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: {name: github-pages, url: "${{ steps.deploy.outputs.page_url }}"}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Losungen-XML laden
+        run: |
+          curl -fsSL "${{ vars.LOSUNGEN_URL }}" -o losungen.zip
+          unzip -o losungen.zip -d raw
+          echo "XML=$(find raw -iname '*.xml' | head -1)" >> "$GITHUB_ENV"
+      - run: python build.py --xml "$XML"
+      - uses: actions/upload-pages-artifact@v3
+        with: {path: docs}
+      - id: deploy
+        uses: actions/deploy-pages@v4
