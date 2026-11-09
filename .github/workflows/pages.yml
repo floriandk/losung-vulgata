@@ -15,7 +15,7 @@ jobs:
         with: {python-version: "3.12"}
       - name: Losungen-XML laden
         run: |
-          curl -fsSL "${{ vars.LOSUNGEN_URL }}" -o losungen.zip
+          curl -fsSLk "${{ vars.LOSUNGEN_URL }}" -o losungen.zip
           unzip -o losungen.zip -d raw
           echo "XML=$(find raw -iname '*.xml' | head -1)" >> "$GITHUB_ENV"
       - run: python build.py --xml "$XML"
